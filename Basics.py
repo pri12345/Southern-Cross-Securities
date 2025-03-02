@@ -31,6 +31,17 @@ plt.ylabel ('Price')
 plt.legend(clean_price_data.columns)
 plt.show
 
+# making them start at 100 and show the evolution in relative numbers (%)
+relativeprices = clean_price_data/clean_price_data.iloc[0] * 100
+
+plt.figure(figsize=(15,6))                     
+plt.plot(relativeprices)
+plt.title(f'relative change {symbol_list}')
+plt.xlabel ('Date')
+plt.ylabel ('Price')
+plt.legend(clean_price_data.columns)
+plt.show
+
 # pct-change() calculates the change between rows,outputs dataframe with % changes 
 daily_returns = clean_price_data.pct_change()*100       \
 
