@@ -132,6 +132,16 @@ plt.plot(log_returns_spread, color = 'green')         # Raw log returns spread p
 plt.title('Log returns spread (GGAL-BMA)')
 plt.show()
 
+
+plt.hist(log_returns_spread, bins=70, color='skyblue', edgecolor='black') 
+plt.title('Distribution of log spread')                                                     # Plotting distribution of spread
+plt.axvline(mean_spread, color = 'purple', linestyle = '--', label = 'mean', linewidth = 2)
+plt.axvline(std_spread, color = 'green', linestyle = '--', label = 'std', linewidth = 2)
+plt.axvline(-std_spread, color = 'green', linestyle = '--', linewidth = 2)
+plt.legend()
+plt.show()
+
+
 plt.figure()
 plt.plot (z_transformed_spread, color = 'purple')
 plt.title('Z-score of spread (GGAL-BMA)')
@@ -140,22 +150,28 @@ plt.axhline(1.96, color = 'green', linestyle = '--', label= '5% CV')
 plt.axhline(-1.96, color = 'red', linestyle = '--', label= '5% CV')
 plt.legend()
 plt.show()
-plt.figure()
 
 
-plt.hist(log_returns_spread, bins=70, color='skyblue', edgecolor='black') #Plotting distribution of spread
-plt.title('Distribution of log spread')
-plt.axvline(mean_spread, color = 'purple', linestyle = '--', label = 'mean', linewidth = 2)
-plt.axvline(std_spread, color = 'green', linestyle = '--', label = 'std', linewidth = 2)
-plt.axvline(-std_spread, color = 'green', linestyle = '--', linewidth = 2)
-plt.legend()
-plt.show()
+
 
 
 
 # %%
 ##              SECTION C: BUILDING THE STRATEGY
 
+initial_cash = 10000
+ggal_position = 0 
+bma_position = 0
+z_critical_values = 1.96
+log_critical_values = z_critical_values * std_spread + mean_spread
 
+trigger_datetimes = []
+
+for logspread in log_returns_spread:
+    if logspread > log_critical_values:
+        print(log_returns_spread[log_returns_spread == logspread].index)
+        trigger_datetimes.append(log_returns_spread[log_returns_spread == logspread].index)
+
+# to be continued
 
 # %%
