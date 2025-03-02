@@ -130,6 +130,7 @@ z_transformed_spread = (log_returns_spread - mean_spread) / std_spread    # Tran
 plt.figure()
 plt.plot(log_returns_spread, color = 'green')         # Raw log returns spread plot
 plt.title('Log returns spread (GGAL-BMA)')
+plt.show()
 
 plt.figure()
 plt.plot (z_transformed_spread, color = 'purple')
@@ -138,6 +139,22 @@ plt.axhline(mean_spread, color = 'blue', linestyle = '--', label= 'mean')       
 plt.axhline(1.96, color = 'green', linestyle = '--', label= '5% CV')
 plt.axhline(-1.96, color = 'red', linestyle = '--', label= '5% CV')
 plt.legend()
+plt.show()
+plt.figure()
+
+
+plt.hist(log_returns_spread, bins=70, color='skyblue', edgecolor='black') #Plotting distribution of spread
+plt.title('Distribution of log spread')
+plt.axvline(mean_spread, color = 'purple', linestyle = '--', label = 'mean', linewidth = 2)
+plt.axvline(std_spread, color = 'green', linestyle = '--', label = 'std', linewidth = 2)
+plt.axvline(-std_spread, color = 'green', linestyle = '--', linewidth = 2)
+plt.legend()
+plt.show()
+
+
+
+# %%
+##              SECTION C: BUILDING THE STRATEGY
 
 
 
