@@ -3,15 +3,18 @@
 import pandas as pd
 import pandas_datareader.data as web
 import numpy as np
-import sklearn
 import yfinance as yf
 import matplotlib.pyplot as plt
 from datetime import datetime
+import sklearn
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import coint
+from statsmodels.tsa.stattools import adfuller
 
 # %%
+
 #     Section Zero: Data, Dates, and initial config
 
-AV_api_key = 'GO6INKUOGFPT2C05' # AlphaVantage API key
 
 # format ---> datetime (yyyy, m, d, h, mm, ss)
 start_time = datetime(2024, 1 ,1)    # 1st Jan 2024 9:30:00 AM NY Time
@@ -29,42 +32,80 @@ plt.title(symbol_list)
 plt.xlabel ('Date')
 plt.ylabel ('Price')
 plt.legend(clean_price_data.columns)
-plt.show
 
-# making them start at 100 and show the evolution in relative numbers (%)
-relativeprices = clean_price_data/clean_price_data.iloc[0] * 100
+log_prices = np.log(clean_price_data)         # np.log log transforms the prices
+log_returns = log_prices.diff().dropna()      # diff() takes the first difference of log prices (= log returns)
 
 plt.figure(figsize=(15,6))                     
-plt.plot(relativeprices)
-plt.title(f'relative change {symbol_list}')
+plt.plot(log_prices)
+plt.title('Log Prices')
 plt.xlabel ('Date')
-plt.ylabel ('Price')
+plt.ylabel ('Log Price')
 plt.legend(clean_price_data.columns)
-plt.show
 
-# pct-change() calculates the change between rows,outputs dataframe with % changes 
-daily_returns = clean_price_data.pct_change()*100       \
+plt.figure(figsize=(15,6))                     
+plt.plot(log_returns)
+plt.title('Log Returns')
+plt.xlabel ('Date')
+plt.ylabel ('Log Returns')
+plt.legend(clean_price_data.columns)
+# %% 
 
-# More plotting
-plt.figure(figsize= (15,6))
-plt.plot (daily_returns)
-plt.title('% daily returns')
-plt.xlabel ('date')
-plt.ylabel('% return')
-plt.legend(daily_returns.columns)
+#     Section A: FEATURES NEEDED FOR A SIMPLE PAIRS TRADING STRATEGY. 
+
+
+# Cointegration: We run an Engle-Granger Cointegration test for 2 time series, or a Johansen test for more
+
+#               Testing if log prices are I(1)
+
+# ADF for stationarity of first difference of log prices (log returns)
+adf_ggal =adfuller (log_returns['GGAL'])
+adf_bma =adfuller (log_returns['BMA'])
+
+if adf_ggal[1] < 0.05:
+    print('Reject H_0 at 5% significance level \nlog returns is stationary \nlog prices are I(1)]')
+if adf_bma[1] > 0.05:
+    print('Do NOT Reject H_0 at 5% significance level, \n log returns is NOT stationary, log prices are not I(1)')
+
+
+# If ADF of log returns is stationary, proceed with cointegration test
+
+# Engler and Granger test
+score, p_value, critical_values = coint(log_prices['GGAL'],log_prices['BMA'] , trend= 'c')    # Coint() is the full engler and Granger test
+
+print (f'ADF Cointegration score: {score} \n p-value: {p_value} \n critical values (1%,5%,10%): {critical_values}' )
+
+if p_value < 0.05:
+    print('Reject H_0 at 5% significance level, series is cointegrated, suitable for pairs trading')
+if p_value > 0.05:
+    print('Do NOT Reject H_0 at 5% significance level \nseries is NOT cointegrated \nNOT suitable for pairs trading')
+
+
+# %%
+#   Manually regressing one stock on another to see the residuals (manually verifying Engler and Granger)
+
+X = log_prices['BMA']
+Y = log_prices['GGAL']
+X_with_constant = sm.add_constant(X)   # Add a constant to the Vector X for the constant in the regression
+model_regression = sm.OLS(Y, X_with_constant).fit()   # Run an OLS regression
+log_residuals = model_regression.resid                   # Save residuals
+
+plt.plot(log_residuals)
+plt.title('log residuals')       # Plotting residuals
+plt.ylabel('Log Residuals')
 plt.show()
 
-## WE ALREADY HAVE OUR INITIAL DATA AND CONFIGURATION, NEXT STEP
+plt.figure()
+plt.plot (Y)
+plt.plot (model_regression.fittedvalues)
+plt.title('GGAL Actual log price vs predicted')     # Plotting the OLS prediction of GGAL (on BMA) vs the actual price
+plt.legend(['GGAL', 'GGAL predicted'])
+plt.show()
 
 
-# %%
+#Testing for stationarity of the residuals
+adf_result = adfuller(log_residuals) ## Uses 2 lags, 280ish sample size
+print (f'ADF test statistic: {adf_result[0]} \np-value" {adf_result[1]} \nCritical Value: {adf_result[4]}') 
+adf_result
 
 
-#     Section A: Features needed for a simple pairs trading strategy. 
-
-
-# Cointegration
-
-
-
-# %%
