@@ -109,3 +109,36 @@ print (f'ADF test statistic: {adf_result[0]} \np-value" {adf_result[1]} \nCritic
 adf_result
 
 
+# %%
+
+#Section B: After we found a cointegrated pair....
+
+log_returns_spread = log_returns['GGAL'] - log_returns['BMA']                         
+
+# Confirming that the spread is stationary
+adf_log_returns_spread = adfuller(log_returns_spread)
+print (f'adf test stat: {adf_log_returns_spread[0]} \n p-value: {adf_log_returns_spread[1]}')      #  ADF test for stationarity of log spread
+if adf_log_returns_spread[1] < 0.05:
+    print('p-value lower than 5%, spread is stationary')
+
+#Calculating moments to Z transform
+mean_spread = log_returns_spread.mean()
+std_spread= log_returns_spread.std()
+
+z_transformed_spread = (log_returns_spread - mean_spread) / std_spread    # Transformed
+
+plt.figure()
+plt.plot(log_returns_spread, color = 'green')         # Raw log returns spread plot
+plt.title('Log returns spread (GGAL-BMA)')
+
+plt.figure()
+plt.plot (z_transformed_spread, color = 'purple')
+plt.title('Z-score of spread (GGAL-BMA)')
+plt.axhline(mean_spread, color = 'blue', linestyle = '--', label= 'mean')       # Plotting Z scores with %5 significance level triggers
+plt.axhline(1.96, color = 'green', linestyle = '--', label= '5% CV')
+plt.axhline(-1.96, color = 'red', linestyle = '--', label= '5% CV')
+plt.legend()
+
+
+
+# %%
