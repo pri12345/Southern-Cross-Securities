@@ -1,0 +1,1 @@
+print('Pending: choosing a broker and getting familiar with its API and spreads')
