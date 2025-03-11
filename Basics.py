@@ -15,7 +15,7 @@ import matplotlib.dates as mdates
 symbol_list = ['GGAL', 'BMA']
 # format ---> yf.download (symbol_list, start = datetime, end = datetime)
 #raw_data= yf.download(symbol_list, start_time , end_time) # Download a dataframe with high, low, open, close, etc.
-raw_data = yf.download(tickers=symbol_list, period="7d", interval="5m")
+raw_data = yf.download(tickers=symbol_list, start='2025-02-15', end = '2025-02-22', interval="1m")
 raw_data.index = raw_data.index.tz_convert('America/New_York')
 raw_data.index = raw_data.index.tz_localize(None)
 raw_data.drop(raw_data[raw_data.index.date == pd.to_datetime('2025-02-27').date()].index, axis = 0 , inplace= True) # ---> dropping earnings outlier    
@@ -172,23 +172,22 @@ bma_position = 0
 z_critical_values = 1.96
 log_critical_values = z_critical_values * std_spread + mean_spread
 
-entries_datetimes = []
 
-for logspread in log_returns_spread:
+
+for indx, logspread in enumerate(log_returns_spread):
     if logspread > log_critical_values  and ggal_position == 0:
-        entrytime = log_returns_spread[log_returns_spread == logspread].index.item()
-        entries_datetimes.append(entrytime)
+        entrytime = log_returns_spread.index[indx]
         ggal_position = -1 
         bma_position = 1
         print('entry', entrytime)
-    elif ggal_position < 0 and (logspread  - mean_spread) < (mean_spread * 0.01):
+    elif ggal_position < 0 and abs(logspread  - mean_spread) < abs(std_spread * 0.1):
         ggal_position = 0
         bma_position = 0 
-        exit_time = log_returns_spread[log_returns_spread == logspread].index.item()
+        exit_time = log_returns_spread.index[indx]
         ggal_profit = clean_price_data['GGAL'].loc[entrytime] - clean_price_data['GGAL'].loc[exit_time]
         bma_profit = clean_price_data['BMA'].loc[exit_time] - clean_price_data['BMA'].loc[entrytime]
         initial_cash = initial_cash  + (ggal_profit + bma_profit)
-        print  ('exit', initial_cash)
+        print  ('exit', exit_time, initial_cash)
 
 
 
