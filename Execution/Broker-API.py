@@ -3,6 +3,7 @@
 #%%
 import pyRofex
 # pyrofex details --> https://github.com/matbarofex/pyRofex
+import pandas as pd
 
 # %%
 
@@ -42,3 +43,21 @@ pyRofex.market_data_subscription(
 
 # %%
 # Seccion Datos Historicos, consultar documentacion API, esta ahi
+response = pyRofex.get_trade_history(
+    ticker="MERV - XMEV - GGALD - CI",   # Instrument symbol
+    start_date="2025-03-13", # Start date (YYYY-MM-DD)
+    end_date="2024-03-14"    # End date (YYYY-MM-DD)
+)
+
+response
+
+# if "trades" in response:
+#     # Convert JSON response to Pandas DataFrame
+#     df = pd.DataFrame(response["trades"])
+#     df["timestamp"] = pd.to_datetime(df["timestamp"])  # Convert timestamp to datetime
+    
+#     # Print first rows
+#     print(df.head())
+# else:
+#     print('error: ', response)
+# %%
